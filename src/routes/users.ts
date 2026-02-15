@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import z from 'zod'
 import { prisma } from '../lib/prisma'
+import { checkSessionIdExists } from '@/middlewares/check-session-id-exists'
+import { randomUUID } from 'node:crypto'
 
 export async function usersRoutes(app: FastifyInstance) {
   app.post('/', async (request, reply) => {
@@ -9,23 +11,43 @@ export async function usersRoutes(app: FastifyInstance) {
       email: z.string().email(),
     })
 
-    const { name, email } = createUserBodySchema.parse(
+    const { name, email, } = createUserBodySchema.parse(
       request.body
     )
 
-    await prisma.user.create({
+    let sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      sessionId = randomUUID()
+
+      reply.cookie('sessionId', sessionId, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      })
+    }
+
+    const resp = await prisma.user.create({
       data: {
         name,
-        email
+        email,
+        session_id: sessionId
       }
     })
 
     return reply.status(201).send()
   })
 
-  app.get('/', async (request, reply) => {
-    const users = await prisma.user.findMany()
+  app.get('/', {
+    preHandler: [checkSessionIdExists]
+  }, async (request) => {
+    const sessionId = String(request.cookies.sessionId)
 
-    return reply.status(200).send(users)
+    const users = await prisma.user.findMany({
+      where: {
+        session_id: sessionId
+      }
+    })
+
+    return { users }
   })
 }
