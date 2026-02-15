@@ -25,8 +25,8 @@ export async function mealsRoutes(app: FastifyInstance) {
         name,
         description,
         date: new Date(date),
-        isOnDiet,
-        userId: currentUserId
+        is_on_diet: isOnDiet,
+        user_id: currentUserId
       }
     })
 
@@ -52,7 +52,7 @@ export async function mealsRoutes(app: FastifyInstance) {
     await prisma.meal.findFirstOrThrow({
       where: {
         id,
-        userId: String(request.user?.id)
+        user_id: String(request.user?.id)
       }
     })
 
@@ -63,13 +63,13 @@ export async function mealsRoutes(app: FastifyInstance) {
     await prisma.meal.update({
       where: {
         id,
-        userId: String(request.user?.id)
+        user_id: String(request.user?.id)
       },
       data: {
         name,
         description,
         date: new Date(date),
-        isOnDiet
+        is_on_diet: isOnDiet
       }
     })
 
@@ -88,14 +88,14 @@ export async function mealsRoutes(app: FastifyInstance) {
     await prisma.meal.findFirstOrThrow({
       where: {
         id,
-        userId: String(request.user?.id)
+        user_id: String(request.user?.id)
       }
     })
 
     await prisma.meal.delete({
       where: {
         id,
-        userId: String(request.user?.id)
+        user_id: String(request.user?.id)
       }
     })
 
@@ -107,7 +107,7 @@ export async function mealsRoutes(app: FastifyInstance) {
   }, async (request) => {
     const totalMealsRegistered = await prisma.meal.findMany({
       where: {
-        userId: String(request.user?.id)
+        user_id: String(request.user?.id)
       },
       orderBy: {
         date: 'desc'
@@ -116,20 +116,20 @@ export async function mealsRoutes(app: FastifyInstance) {
 
     const totalMealsOnDiet = await prisma.meal.count({
       where: {
-        userId: String(request.user?.id),
-        isOnDiet: true
+        user_id: String(request.user?.id),
+        is_on_diet: true
       }
     })
 
     const totalMealsOffDiet = await prisma.meal.count({
       where: {
-        userId: String(request.user?.id),
-        isOnDiet: false
+        user_id: String(request.user?.id),
+        is_on_diet: false
       }
     })
 
     const { longestSequenceOnDiet } = totalMealsRegistered.reduce((acc, meal) => {
-      if (meal.isOnDiet) {
+      if (meal.is_on_diet) {
         acc.currentSequence += 1
       } else {
         acc.currentSequence = 0

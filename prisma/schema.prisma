@@ -25,9 +25,9 @@ model Meal {
   name        String
   description String
   date        DateTime
-  isOnDiet    Boolean
-  userId      String
+  is_on_diet  Boolean
+  user_id     String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [user_id], references: [id])
 }
