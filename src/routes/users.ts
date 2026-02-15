@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import z from 'zod'
 import { prisma } from '../lib/prisma'
-import { checkSessionIdExists } from '@/middlewares/check-session-id-exists'
 import { randomUUID } from 'node:crypto'
+import { checkSessionIdExists } from '@/middlewares/check-session-id-exists'
 
 export async function usersRoutes(app: FastifyInstance) {
   app.post('/', async (request, reply) => {

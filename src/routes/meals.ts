@@ -102,6 +102,39 @@ export async function mealsRoutes(app: FastifyInstance) {
     reply.status(204).send()
   })
 
+  app.get('/', {
+    preHandler: [checkSessionIdExists]
+  }, async (request) => {
+    const meals = await prisma.meal.findMany({
+      where: {
+        user_id: String(request.user?.id)
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    })
+
+    return { meals }
+  })
+
+  app.get('/:id', {
+    preHandler: [checkSessionIdExists]
+  }, async (request) => {
+    const getMealParamsSchema = z.object({
+      id: z.string().uuid()
+    })
+
+    const { id } = getMealParamsSchema.parse(request.params)
+    const meal = await prisma.meal.findFirst({
+      where: {
+        id,
+        user_id: String(request.user?.id),
+      }
+    })
+
+    return { meal }
+  })
+
   app.get('/metrics', {
     preHandler: [checkSessionIdExists]
   }, async (request) => {
